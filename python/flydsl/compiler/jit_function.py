@@ -26,7 +26,7 @@ from ..expr.typing import Constexpr, Stream
 from ..utils import env, log
 from .ast_rewriter import ASTRewriter
 from .backends import compile_backend_name, get_backend
-from .jit_argument import convert_to_jit_arguments, is_type_param_annotation
+from .jit_argument import convert_to_jit_arguments, is_type_param_annotation, resolve_signature
 from .jit_executor import CompiledArtifact
 from .kernel_function import (
     CompilationContext,
@@ -1048,7 +1048,7 @@ class JitFunction:
         """Initialize signature + param metadata on first call (not at decoration time)."""
         if self._sig is not None:
             return
-        full_sig = inspect.signature(self.func)
+        full_sig = resolve_signature(self.func)
         params = list(full_sig.parameters.values())
 
         self._has_self_param = bool(params) and params[0].name == "self"
