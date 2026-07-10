@@ -105,9 +105,7 @@ def _pack_gui_layout(gate: torch.Tensor, up: torch.Tensor) -> torch.Tensor:
     return inter.reshape(rows, 2 * inter_dim).contiguous()
 
 
-def _gather_sorted_scales(
-    out_scale_sorted: torch.Tensor, rows: int, scale_cols: int
-) -> torch.Tensor:
+def _gather_sorted_scales(out_scale_sorted: torch.Tensor, rows: int, scale_cols: int) -> torch.Tensor:
     """Gather the e8m0 scale byte for every (row, block) out of the kernel's shuffled
     sorted-scale buffer, replicating the kernel's s_byte_off formula:
 
@@ -191,7 +189,7 @@ def run_silu_and_mul_fq_test(
 
     # Bias path: topk_ids maps each in_row -> expert; bias is [experts, 2*inter_dim].
     if enable_bias:
-        expert_of_row = (torch.arange(rows, device=device, dtype=torch.int32) % num_experts)
+        expert_of_row = torch.arange(rows, device=device, dtype=torch.int32) % num_experts
         topk_ids = expert_of_row.contiguous()
         bias = torch.randn((num_experts, 2 * inter_dim), device=device, dtype=torch.float32)
         gate_bias = bias[expert_of_row.long(), :inter_dim]
@@ -240,9 +238,7 @@ def run_silu_and_mul_fq_test(
     torch.cuda.synchronize()
 
     if quant_mode == "none":
-        assert verify_output(
-            out_buf.float(), ref, rtol=1e-2, atol=1e-2, msg=f"[silu_and_mul_fq {act}]"
-        )
+        assert verify_output(out_buf.float(), ref, rtol=1e-2, atol=1e-2, msg=f"[silu_and_mul_fq {act}]")
     else:
         scales = _gather_sorted_scales(out_scale_sorted, rows, scale_cols)
         deq = _dequant(out_buf, scales, inter_dim, quant_mode)
@@ -263,12 +259,8 @@ def run_silu_and_mul_fq_test(
 
 _QUANT_PARAMS = [
     pytest.param("none", id="none"),
-    pytest.param(
-        "fp8", id="fp8", marks=pytest.mark.skipif("gfx95" not in ARCH, reason="fp8 requires gfx950+")
-    ),
-    pytest.param(
-        "fp4", id="fp4", marks=pytest.mark.skipif("gfx95" not in ARCH, reason="fp4 requires gfx950+")
-    ),
+    pytest.param("fp8", id="fp8", marks=pytest.mark.skipif("gfx95" not in ARCH, reason="fp8 requires gfx950+")),
+    pytest.param("fp4", id="fp4", marks=pytest.mark.skipif("gfx95" not in ARCH, reason="fp4 requires gfx950+")),
 ]
 
 
