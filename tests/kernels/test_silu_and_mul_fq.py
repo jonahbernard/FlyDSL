@@ -37,7 +37,7 @@ for _p in reversed(_PYTHON_CANDIDATES):
     if os.path.isdir(_p) and _p not in sys.path:
         sys.path.insert(0, _p)
 
-from kernels.silu_and_mul_fq import BLOCK_THREADS, build_silu_and_mul_fq_module  # noqa: E402
+from kernels.moe.silu_and_mul_fq import BLOCK_THREADS, build_silu_and_mul_fq_module  # noqa: E402
 from tests.test_common import run_perftest, verify_output  # noqa: E402
 
 try:
